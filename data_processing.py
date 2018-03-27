@@ -10,6 +10,7 @@ import pandas as pd
 import sqlite3 as sql
 import os
 import matplotlib.pyplot as plt
+import datetime
 from IPython import get_ipython
 get_ipython().run_line_magic('matplotlib', 'inline')
 
@@ -100,6 +101,14 @@ player_data=prep_player_data(player_data) #176161 rows
 player_data.head()
 player_data['player_api_id'].astype('category')
 
+def get_age(x1,x2):
+    bday  =  x1.split(" ")[0]
+    fifa  =  x2.split(" ")[0]
+    bday = datetime.datetime.strptime(bday, "%Y-%m-%d").date()
+    fifa = datetime.datetime.strptime(fifa, "%Y-%m-%d").date()
+    return fifa.year - bday.year - ((fifa.month, fifa.day) < (bday.month, bday.day))
+
+player_data["age"] = np.vectorize(get_age)(player_data["birthday"],player_data['date'])
 
 player_data['player_fifa_api_id']=player_data['player_fifa_api_id'].astype(np.int64)
 player_data['player_api_id']=player_data['player_api_id'].astype(np.int64)
@@ -146,6 +155,7 @@ player_data['player_name']=player_data['player_name'].astype(np.str)
 player_data['birthday']=player_data['birthday'].astype(np.str)
 player_data['height']=player_data['height'].astype(np.int16)
 player_data['weight']=player_data['weight'].astype(np.int16)
+player_data['age']=player_data['age'].astype(np.int16)
 
 os.chdir(project_path+'\plots')
 for col in player_data.columns:
