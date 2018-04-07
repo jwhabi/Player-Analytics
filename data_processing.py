@@ -37,11 +37,11 @@ type(df)
 print(df['Match'].keys())
 
 print(df['Player_Attributes'].head(2))
-
+print(df['Player_Attributes']['player_api_id'].head(2))
 
 def get_position(x):
-    data=df['Player_Attributes'][df['Player_Attributes'].player_api_id==x]
-    print(data['player_api_id'])
+    #data=df['Player_Attributes'][df['Player_Attributes'].player_api_id==x]
+    #print(data['player_api_id'])
     d2=df['Match'].home_player_Y1[df['Match'].home_player_1==x]
     d2=d2.append(df['Match'].home_player_Y2[df['Match'].home_player_2==x])
     d2=d2.append(df['Match'].home_player_Y3[df['Match'].home_player_3==x])
@@ -54,7 +54,19 @@ def get_position(x):
     d2=d2.append(df['Match'].home_player_Y10[df['Match'].home_player_10==x])
     d2=d2.append(df['Match'].home_player_Y11[df['Match'].home_player_11==x])
     
-    print(d2)
+    d2=d2.append(df['Match'].away_player_Y1[df['Match'].away_player_1==x])
+    d2=d2.append(df['Match'].away_player_Y2[df['Match'].away_player_2==x])
+    d2=d2.append(df['Match'].away_player_Y3[df['Match'].away_player_3==x])
+    d2=d2.append(df['Match'].away_player_Y4[df['Match'].away_player_4==x])
+    d2=d2.append(df['Match'].away_player_Y5[df['Match'].away_player_5==x])
+    d2=d2.append(df['Match'].away_player_Y6[df['Match'].away_player_6==x])
+    d2=d2.append(df['Match'].away_player_Y7[df['Match'].away_player_7==x])
+    d2=d2.append(df['Match'].away_player_Y8[df['Match'].away_player_8==x])
+    d2=d2.append(df['Match'].away_player_Y9[df['Match'].away_player_9==x])
+    d2=d2.append(df['Match'].away_player_Y10[df['Match'].away_player_10==x])
+    d2=d2.append(df['Match'].away_player_Y11[df['Match'].away_player_11==x])
+    
+    #print(d2)
     if len(d2) > 0:
                 Y = np.array(d2,dtype=np.float)
                 mean_y = np.nanmean(Y)
@@ -71,7 +83,24 @@ def get_position(x):
         
 
 #get_position(36835)    
-get_position(38788)
-get_position(94462)
-get_position(37069)
-get_position(50160)
+#get_position(38788)
+#get_position(94462)
+#get_position(37069)
+#get_position(50160)
+pos=[]
+
+
+for i in range(0,len(df['Player_Attributes'])):
+    #df['Player_Attributes']['position'][i]=get_position(df['Player_Attributes'].player_api_id[i])
+    pos.append(get_position(df['Player_Attributes'].player_api_id[i]))
+    
+df['Player_Attributes']['position'] = pos
+df['Player_Attributes'].to_csv('Player_Attributes' + '.csv', index_label='index')   
+#print(len(pos))
+#
+#x=[]
+#for i in range(0,len(df['Player_Attributes'])):
+#    x.append(i)
+#print(x)   
+#get_position(df['Player_Attributes'].player_api_id[183978]) 
+#get_position(df['Player_Attributes'].player_api_id[0])
