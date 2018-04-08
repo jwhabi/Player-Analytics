@@ -18,6 +18,7 @@ cur.execute("select * from Player_Attributes limit 5").fetchall()
 results=cur.fetchall()
 
 print(results)
+print("hello world")
 
 
 #------------------------
