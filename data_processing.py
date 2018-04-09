@@ -1,35 +1,109 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Mar 12 21:02:44 2018
+Created on Wed Apr  4 22:34:45 2018
 
-@author: Vaibhav
+@author: jaide
 """
 
-import numpy as np
+import sqlite3 
 import pandas as pd
-import sqlite3 as sql
+import numpy as np
+
 import os
 import matplotlib.pyplot as plt
 import datetime
 from IPython import get_ipython
 get_ipython().run_line_magic('matplotlib', 'inline')
 
-#Setting path
-project_path='C:\Masters\Data Preparation and Analysis\Project'
-os.chdir(project_path)
-#os.getcwd()
+conn = sqlite3.connect("C:\\Users\\jaide\\Downloads\\soccer\\database.sqlite")
 
-#Reding Player.csv
-player=pd.read_csv('Player.csv')
-#player.head()
+cur=conn.cursor()
 
-#Reading Player_Attribute.csv
-player_attrib=pd.read_csv('Player_Attributes.csv')
-#player_attrib.head()
 
-#Performing inner join
-player_data=pd.merge(player_attrib, player, how='inner', on=['player_api_id'])
-#player_data.head()
+#------------------------
+table = pd.read_sql_query("SELECT name FROM sqlite_master WHERE type='table'", conn)
+
+df={}
+for n in table['name']:
+    print(n)
+    
+    df[n]=pd.read_sql_query("SELECT * from %s" % n, conn)
+    df[n].to_csv(n + '.csv', index_label='index')
+    
+#locals().update(df) ------->>> is messing with local namespace a bad idea?? research needed
+print(df.keys())
+
+#Evaluate the labelled position for each player based on match lineups
+def get_position(x):
+    #data=df['Player_Attributes'][df['Player_Attributes'].player_api_id==x]
+    #print(data['player_api_id'])
+    d2=df['Match'].home_player_Y1[df['Match'].home_player_1==x]
+    d2=d2.append(df['Match'].home_player_Y2[df['Match'].home_player_2==x])
+    d2=d2.append(df['Match'].home_player_Y3[df['Match'].home_player_3==x])
+    d2=d2.append(df['Match'].home_player_Y4[df['Match'].home_player_4==x])
+    d2=d2.append(df['Match'].home_player_Y5[df['Match'].home_player_5==x])
+    d2=d2.append(df['Match'].home_player_Y6[df['Match'].home_player_6==x])
+    d2=d2.append(df['Match'].home_player_Y7[df['Match'].home_player_7==x])
+    d2=d2.append(df['Match'].home_player_Y8[df['Match'].home_player_8==x])
+    d2=d2.append(df['Match'].home_player_Y9[df['Match'].home_player_9==x])
+    d2=d2.append(df['Match'].home_player_Y10[df['Match'].home_player_10==x])
+    d2=d2.append(df['Match'].home_player_Y11[df['Match'].home_player_11==x])
+    
+    d2=d2.append(df['Match'].away_player_Y1[df['Match'].away_player_1==x])
+    d2=d2.append(df['Match'].away_player_Y2[df['Match'].away_player_2==x])
+    d2=d2.append(df['Match'].away_player_Y3[df['Match'].away_player_3==x])
+    d2=d2.append(df['Match'].away_player_Y4[df['Match'].away_player_4==x])
+    d2=d2.append(df['Match'].away_player_Y5[df['Match'].away_player_5==x])
+    d2=d2.append(df['Match'].away_player_Y6[df['Match'].away_player_6==x])
+    d2=d2.append(df['Match'].away_player_Y7[df['Match'].away_player_7==x])
+    d2=d2.append(df['Match'].away_player_Y8[df['Match'].away_player_8==x])
+    d2=d2.append(df['Match'].away_player_Y9[df['Match'].away_player_9==x])
+    d2=d2.append(df['Match'].away_player_Y10[df['Match'].away_player_10==x])
+    d2=d2.append(df['Match'].away_player_Y11[df['Match'].away_player_11==x])
+    
+    #print(d2)
+    if len(d2) > 0:
+                Y = np.array(d2,dtype=np.float)
+                mean_y = np.nanmean(Y)
+                print(mean_y)
+                if (mean_y >= 10.0):
+                    return "for"
+                elif (mean_y > 5):
+                    return "mid"
+                elif (mean_y > 1):
+                    return "def"
+                elif (mean_y == 1.0):
+                    return "gk"
+    return None
+        
+#Test: (uncomment any below lines to test the function)
+#get_position(36835)    
+#get_position(38788)
+#get_position(94462)
+#get_position(37069)
+#get_position(50160)
+pos=[]
+
+
+for i in range(0,len(df['Player_Attributes'])):
+    pos.append(get_position(df['Player_Attributes'].player_api_id[i]))
+    
+df['Player_Attributes']['position'] = pos
+df['Player_Attributes'].to_csv('Player_Attributes' + '.csv', index_label='index')   
+
+nanrows=df['Player_Attributes'][df['Player_Attributes'].isnull().T.any().T]
+nanrows.shape
+
+df['Player_Attributes']=df['Player_Attributes'].dropna()
+df['Player_Attributes'].shape
+df['Player_Attributes'].to_csv('Player_Attributes' + '.csv', index_label='index')   
+
+#180195 rows (prev 183978)
+#10403 players (prev 11060)
+
+#Merge with additonal player data like birthdate,etc
+player_data=pd.merge(df['Player_Attributes'], df['Player'], how='inner', on=['player_api_id'])
+
 
 #Dropping duplicate columns
 player_data=player_data.loc[:, player_data.columns!='Unnamed: 0_x']
@@ -39,45 +113,17 @@ player_data=player_data.loc[:, player_data.columns!='id_y']
 player_data=player_data.loc[:, player_data.columns!='player_fifa_api_id_y']
 #Change of column name
 player_data.rename(columns={'player_fifa_api_id_x': 'player_fifa_api_id'}, inplace=True)
-#player_data.head()
-#player_data.describe()#183978
 
-#list of observations with NaN values for any variable
+
+
 nanrows=player_data[player_data.isnull().T.any().T]
-nanrows.shape#3624
-#nanrows=player_data[player_data['overall_rating'].isnull()]
-
-"""3624 is nearly 2% of the player data available. Hence dropping this would not 
-affect our analysis"""
-player_data=player_data.dropna()#180354
-
-###############################################################################
-#Saving to disk
-#player_data.to_csv('Player_Data.csv')
-###############################################################################
-
-#player_data.columns
-"""
-['player_fifa_api_id', 'player_api_id', 'date', 'overall_rating',
-       'potential', 'preferred_foot', 'attacking_work_rate',
-       'defensive_work_rate', 'crossing', 'finishing', 'heading_accuracy',
-       'short_passing', 'volleys', 'dribbling', 'curve', 'free_kick_accuracy',
-       'long_passing', 'ball_control', 'acceleration', 'sprint_speed',
-       'agility', 'reactions', 'balance', 'shot_power', 'jumping', 'stamina',
-       'strength', 'long_shots', 'aggression', 'interceptions', 'positioning',
-       'vision', 'penalties', 'marking', 'standing_tackle', 'sliding_tackle',
-       'gk_diving', 'gk_handling', 'gk_kicking', 'gk_positioning',
-       'gk_reflexes', 'player_name', 'birthday', 'height', 'weight'],
-      dtype='object'
-"""
-
-player_attrib['attacking_work_rate'].astype('category')
-player_attrib['preferred_foot'].values
-
-player_attrib.loc[927,:]
-player_data.loc[1:10,:]
-player_data.sort_index().loc[920:930]
+nanrows.shape
+#0 NA rows
 player_data.shape
+
+player_data['attacking_work_rate'].unique()
+player_data['defensive_work_rate'].unique()
+player_data['preferred_foot'].unique()
 
 """
 Multiple instances of work rate and preferred foot being labelled incorrectly.
@@ -85,8 +131,8 @@ This method would drop all the rows containing uncertain values and map the
 data to correct key as seen below
 """ 
 def prep_player_data (df):
-    work_rate_dict = {'low': 0, 'medium': 1, 'high': 2}
-    pref_foot_dict = {'left': 0, 'right': 1, 'None': 2}
+    work_rate_dict = {'low': 'low', 'medium': 'medium', 'high': 'high'}
+    pref_foot_dict = {'left': 'left', 'right': 'right', 'None': 'None'}
 
     df = df.loc[(df['attacking_work_rate'].isin(work_rate_dict.keys())) & 
                 (df['defensive_work_rate'].isin(work_rate_dict.keys()))].copy()
@@ -97,8 +143,9 @@ def prep_player_data (df):
     
     return df
 
-player_data=prep_player_data(player_data) #176161 rows
-player_data.head()
+player_data=prep_player_data(player_data) #176002 rows
+player_data.shape
+print(player_data.head(1))
 player_data['player_api_id'].astype('category')
 
 def get_age(x1,x2):
@@ -109,15 +156,17 @@ def get_age(x1,x2):
     return fifa.year - bday.year - ((fifa.month, fifa.day) < (bday.month, bday.day))
 
 player_data["age"] = np.vectorize(get_age)(player_data["birthday"],player_data['date'])
+player_data.shape
+print(player_data.head(1))
 
 player_data['player_fifa_api_id']=player_data['player_fifa_api_id'].astype(np.int64)
 player_data['player_api_id']=player_data['player_api_id'].astype(np.int64)
-player_data['date']=player_data['date'].astype(np.str)
+player_data['date']=player_data['date'].astype(np.datetime64) ##Future warning??
 player_data['overall_rating']=player_data['overall_rating'].astype(np.int16)
 player_data['potential']=player_data['potential'].astype(np.int16)
-player_data['preferred_foot']=player_data['preferred_foot'].astype(np.int16)
-player_data['attacking_work_rate']=player_data['attacking_work_rate'].astype(np.int16)
-player_data['defensive_work_rate']=player_data['defensive_work_rate'].astype(np.int16)
+player_data['preferred_foot']=player_data['preferred_foot'].astype('category')
+player_data['attacking_work_rate']=player_data['attacking_work_rate'].astype('category')
+player_data['defensive_work_rate']=player_data['defensive_work_rate'].astype('category')
 player_data['crossing']=player_data['crossing'].astype(np.int16)
 player_data['finishing']=player_data['finishing'].astype(np.int16)
 player_data['heading_accuracy']=player_data['heading_accuracy'].astype(np.int16)
@@ -157,9 +206,12 @@ player_data['height']=player_data['height'].astype(np.int16)
 player_data['weight']=player_data['weight'].astype(np.int16)
 player_data['age']=player_data['age'].astype(np.int16)
 
-os.chdir(project_path+'\plots')
+player_data['attacking_work_rate'].values
+len(player_data)
+
 for col in player_data.columns:
-    if player_data[col].dtypes != 'O':
+    print(col)
+    if (player_data[col].dtypes == 'int16' or player_data[col].dtypes == 'int64'):
         print('creating fig')
         fig=plt.figure()
         print('creating subplot')
@@ -169,23 +221,17 @@ for col in player_data.columns:
         print('saving figure')
         fig.savefig(col+'.png')
         plt.close(fig)
-os.chdir(project_path)
-#Generating histograms
-os.chdir(project_path+'\plots')
-for col in player_data.columns:
-    if player_data[col].dtypes != 'O':
+        
+    if (player_data[col].dtype.name == 'category'):
         print('creating fig')
-        fig=plt.figure()
+        plot=player_data[col].value_counts().plot(kind='bar')
+        fig=plot.get_figure()
         print('creating subplot')
-        ax=fig.add_subplot(111)
-        print('creating boxplot')
-        bp=ax.hist(player_data[col])
+        print('creating barchart')     
         print('saving figure')
-        fig.savefig(col+'_hist.png')
+        fig.savefig(col+'.png')
         plt.close(fig)
-os.chdir(project_path)
-
-
+        
 from sklearn.model_selection import train_test_split
 X=player_data
 y=player_data.overall_rating
