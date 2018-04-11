@@ -69,3 +69,20 @@ rforest1 = RandomForestClassifier(max_depth=20, random_state=0)
 rforest1.fit(tree_train, predict_train)
 acuforest=metrics.accuracy_score(predict_test, rforest1.predict(tree_test))
 print(acuforest)
+
+
+
+#Creating a png for the best decision tree
+from sklearn.externals.six import StringIO  
+from IPython.display import Image  
+from sklearn.tree import export_graphviz
+import pydotplus
+
+dot_data = StringIO()
+export_graphviz(clf, out_file=dot_data,  
+                filled=True, rounded=True,
+                special_characters=True,
+                feature_names=tree_train.columns,
+                class_names=["1", "2", "3", "4", "5"])
+graph = pydotplus.graph_from_dot_data(dot_data.getvalue())  
+Image(graph.create_png())
