@@ -131,13 +131,17 @@ This method would drop all the rows containing uncertain values and map the
 data to correct key as seen below
 """ 
 def prep_player_data (df):
-    work_rate_dict = {'low': 'low', 'medium': 'medium', 'high': 'high'}
-    pref_foot_dict = {'left': 'left', 'right': 'right', 'None': 'None'}
+    #work_rate_dict = {'low': 'low', 'medium': 'medium', 'high': 'high'}
+    #pref_foot_dict = {'left': 'left', 'right': 'right', 'None': 'None'}
+    work_rate_dict = {'low': 0, 'medium': 1, 'high': 2}
+    pref_foot_dict = {'left': 1, 'right': 2, 'None': 0}
+    pos_dict = {'for': 3, 'mid': 2, 'def': 1, 'gk': 0}
 
     df = df.loc[(df['attacking_work_rate'].isin(work_rate_dict.keys())) & 
                 (df['defensive_work_rate'].isin(work_rate_dict.keys()))].copy()
     
     df.loc[:, 'preferred_foot'] = df.loc[:, 'preferred_foot'].map(pref_foot_dict)
+    df.loc[:, 'position'] = df.loc[:, 'position'].map(pos_dict)
     df.loc[:, 'attacking_work_rate'] = df.loc[:, 'attacking_work_rate'].map(work_rate_dict)
     df.loc[:, 'defensive_work_rate'] = df.loc[:, 'defensive_work_rate'].map(work_rate_dict)
     
@@ -161,12 +165,17 @@ print(player_data.head(1))
 
 player_data['player_fifa_api_id']=player_data['player_fifa_api_id'].astype(np.int64)
 player_data['player_api_id']=player_data['player_api_id'].astype(np.int64)
-player_data['date']=player_data['date'].astype(np.datetime64) ##Future warning??
+player_data['date']=player_data['date'].astype(np.str) ##Future warning??
 player_data['overall_rating']=player_data['overall_rating'].astype(np.int16)
 player_data['potential']=player_data['potential'].astype(np.int16)
-player_data['preferred_foot']=player_data['preferred_foot'].astype('category')
-player_data['attacking_work_rate']=player_data['attacking_work_rate'].astype('category')
-player_data['defensive_work_rate']=player_data['defensive_work_rate'].astype('category')
+
+#player_data['preferred_foot']=player_data['preferred_foot'].astype('category')
+#player_data['attacking_work_rate']=player_data['attacking_work_rate'].astype('category')
+#player_data['defensive_work_rate']=player_data['defensive_work_rate'].astype('category')
+player_data['preferred_foot']=player_data['preferred_foot'].astype(np.int16)
+player_data['attacking_work_rate']=player_data['attacking_work_rate'].astype(np.int16)
+player_data['defensive_work_rate']=player_data['defensive_work_rate'].astype(np.int16)
+
 player_data['crossing']=player_data['crossing'].astype(np.int16)
 player_data['finishing']=player_data['finishing'].astype(np.int16)
 player_data['heading_accuracy']=player_data['heading_accuracy'].astype(np.int16)
@@ -205,9 +214,11 @@ player_data['birthday']=player_data['birthday'].astype(np.str)
 player_data['height']=player_data['height'].astype(np.int16)
 player_data['weight']=player_data['weight'].astype(np.int16)
 player_data['age']=player_data['age'].astype(np.int16)
+player_data['position']=player_data['position'].astype('category')
+
 
 player_data['attacking_work_rate'].values
-len(player_data)
+player_data.shape
 
 for col in player_data.columns:
     print(col)
@@ -232,14 +243,117 @@ for col in player_data.columns:
         fig.savefig(col+'.png')
         plt.close(fig)
         
+player_data.describe(include= 'all')
+player_data.dtypes
+      
 from sklearn.model_selection import train_test_split
 X=player_data
-y=player_data.overall_rating
+X=X.drop(['position'],axis=1)
+y=player_data.position
 X_train, X_test, y_train, y_test = train_test_split( X, y, test_size=0.2, random_state=42)
 
 X_train.shape
 X_train.boxplot('potential')
 X_train.to_csv('training set.csv')
-X_test
+X_test.shape
 X_test.boxplot('potential')
 X_test.to_csv('test set.csv')
+
+X_train=X_train.drop('date',1)
+X_test=X_test.drop('date',1)
+X_train=X_train.drop('birthday',1)
+X_test=X_test.drop('birthday',1)
+X_train=X_train.drop('player_name',1)
+X_test=X_test.drop('player_name',1)
+X_test=X_test.drop('player_api_id',1)
+X_train=X_train.drop('player_api_id',1)
+X_test=X_test.drop('player_fifa_api_id',1)
+X_train=X_train.drop('player_fifa_api_id',1)
+
+from sklearn.naive_bayes import GaussianNB
+gnb = GaussianNB()
+y_pred = gnb.fit(X_train, y_train).predict(X_test)
+y_pred.dtype
+print("Number of mislabeled points out of a total %d points : %d"  % (X_test.shape[0],(y_test != y_pred).sum()))
+from Eval import Eval
+eval1 = Eval(y_pred, np.array(y_test))
+
+print("Positive Class:")
+print("Accuracy: ",eval1.Accuracy())
+from sklearn.metrics import recall_score,precision_score,accuracy_score
+print(recall_score(y_test,y_pred,average=None))
+print(precision_score(y_test,y_pred,average=None))
+print(accuracy_score(y_test,y_pred))
+print("Recall: ",eval1.Recall())
+print("Precision: ",eval1.Precision())
+
+#--------------------------------------------------------
+
+
+#def prep_player_data_reverse (df):
+#    #work_rate_dict = {'low': 'low', 'medium': 'medium', 'high': 'high'}
+#    #pref_foot_dict = {'left': 'left', 'right': 'right', 'None': 'None'}
+#    work_rate_dict = {0: 'low', 1: 'medium', 2: 'high'}
+#    pref_foot_dict = { 1:'left', 2:'right',  0: 'None'}
+#    
+#
+#    df = df.loc[(df['attacking_work_rate'].isin(work_rate_dict.keys())) & 
+#                (df['defensive_work_rate'].isin(work_rate_dict.keys()))].copy()
+#    
+#    df.loc[:, 'preferred_foot'] = df.loc[:, 'preferred_foot'].map(pref_foot_dict)
+#    
+#    df.loc[:, 'attacking_work_rate'] = df.loc[:, 'attacking_work_rate'].map(work_rate_dict)
+#    df.loc[:, 'defensive_work_rate'] = df.loc[:, 'defensive_work_rate'].map(work_rate_dict)
+#    df['attacking_work_rate']=df['attacking_work_rate'].astype('category')
+#    df['defensive_work_rate']=df['defensive_work_rate'].astype('category')
+#    df['preferred_foot']=df['preferred_foot'].astype('category')
+#    return df
+#
+#X_train=prep_player_data_reverse(X_train)
+#X_test=prep_player_data_reverse(X_test)
+#X_train.dtypes
+#X_test.dtypes
+#pos_dict = { 3: 'for',  2: 'mid', 1: 'def', 0: 'gk'}
+#df.loc[:, 'position'] = df.loc[:, 'position'].map(pos_dict)
+
+
+def convert_to_categories(x):
+    for i in x.columns:
+        if x[i].dtype=='int16':
+            category=pd.cut(np.array(x[i]), 3,labels=[0,1,2])
+            x[i]=category
+    
+    return x
+
+X_train=convert_to_categories(X_train)
+X_train.dtypes
+X_train.aggression
+
+
+X_test=convert_to_categories(X_test)
+X_test.dtypes
+X_test.aggression
+
+#y_train=y_train.map({ 3: 'for',  2: 'mid', 1: 'def', 0: 'gk'})
+#y_test=y_test.map({ 3: 'for',  2: 'mid', 1: 'def', 0: 'gk'})
+#
+#y_train=y_train.astype('category')
+#y_test=y_test.astype('category')
+
+
+from sklearn.naive_bayes import MultinomialNB
+gnb = MultinomialNB()
+y_pred = gnb.fit(X_train, y_train).predict(X_test)
+gnb.fit(X_train, y_train).predict(X_test.head(5))
+print("Number of mislabeled points out of a total %d points : %d"  % (X_test.shape[0],(y_test != y_pred).sum()))
+from Eval import Eval
+eval1 = Eval(y_pred, np.array(y_test))
+
+print("Positive Class:")
+print("Accuracy: ",eval1.Accuracy())
+from sklearn.metrics import recall_score,precision_score,accuracy_score
+print(recall_score(y_test,y_pred,average=None))
+print(precision_score(y_test,y_pred,average=None))
+print(accuracy_score(y_test,y_pred))
+print("Recall: ",eval1.Recall())
+print("Precision: ",eval1.Precision())
