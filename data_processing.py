@@ -287,6 +287,27 @@ print(accuracy_score(y_test,y_pred))
 print("Recall: ",eval1.Recall())
 print("Precision: ",eval1.Precision())
 
+means=pd.DataFrame(columns=['Feature','diff_abs_mean','diff_var'])
+diff=[]
+ad=[]
+for i in range(0,gnb.theta_.shape[1]):
+    diff.append(abs(gnb.theta_[0,i]-gnb.theta_[1,i]))
+    ad.append(gnb.sigma_[0,i]+gnb.sigma_[1,i])
+    means=means.append([{'Feature': X_train.columns[i],'diff_abs_mean': abs(gnb.theta_[0,i]-gnb.theta_[1,i]), 'diff_var': gnb.sigma_[0,i]+gnb.sigma_[1,i]}])
+means['measure']=means.diff_abs_mean/means.diff_var
+means=means.reset_index()
+means=means.drop(['index','diff_abs_mean','diff_var'],1)
+means.sort_values(by=['measure'], ascending = False)
+
+
+from sklearn.model_selection import cross_val_score
+cross_fold = pd.DataFrame(columns=['Precision', 'Recall', 'Accuracy'])
+cross_fold.Precision=cross_val_score(gnb,X_train,y_train,cv=10,scoring='precision_micro')
+
+cross_fold.Recall=cross_val_score(gnb,X_train,y_train,cv=10,scoring='recall_micro')
+cross_fold.Accuracy=cross_val_score(gnb,X_train,y_train,cv=10)
+cross_fold
+
 #--------------------------------------------------------
 
 
