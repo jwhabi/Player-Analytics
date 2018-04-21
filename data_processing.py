@@ -270,6 +270,13 @@ X_train=X_train.drop('player_api_id',1)
 X_test=X_test.drop('player_fifa_api_id',1)
 X_train=X_train.drop('player_fifa_api_id',1)
 
+X_test=X_test.drop('defensive_work_rate',1)
+X_train=X_train.drop('defensive_work_rate',1)
+X_test=X_test.drop('attacking_work_rate',1)
+X_train=X_train.drop('attacking_work_rate',1)
+X_test=X_test.drop('preferred_foot',1)
+X_train=X_train.drop('preferred_foot',1)
+
 from sklearn.naive_bayes import GaussianNB
 gnb = GaussianNB()
 y_pred = gnb.fit(X_train, y_train).predict(X_test)
