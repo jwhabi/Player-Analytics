@@ -279,7 +279,7 @@ X_train=X_train.drop('preferred_foot',1)
 
 from sklearn.naive_bayes import GaussianNB
 gnb = GaussianNB()
-y_pred = gnb.fit(X_train, y_train).predict(X_test)
+y_pred = gnb.fit(reduced_data_pca, y_train).predict(reduced_data_pca1)
 y_pred.dtype
 print("Number of mislabeled points out of a total %d points : %d"  % (X_test.shape[0],(y_test != y_pred).sum()))
 from Eval import Eval
@@ -385,3 +385,33 @@ print(precision_score(y_test,y_pred,average=None))
 print(accuracy_score(y_test,y_pred))
 print("Recall: ",eval1.Recall())
 print("Precision: ",eval1.Precision())
+
+
+from sklearn.decomposition import RandomizedPCA,PCA
+
+
+# Create a regular PCA model 
+pca = PCA(n_components=10)
+
+# Fit and transform the data to the model
+reduced_data_pca = pca.fit_transform(X_train)
+
+# Inspect the shape
+reduced_data_pca.shape
+
+# Print out the data
+
+#print(reduced_data_pca)
+
+
+pca = PCA(n_components=10)
+
+# Fit and transform the data to the model
+reduced_data_pca1 = pca.fit_transform(X_test)
+
+# Inspect the shape
+reduced_data_pca1.shape
+
+# Print out the data
+
+#print(reduced_data_pca)
