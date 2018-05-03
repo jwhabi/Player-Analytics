@@ -1,0 +1,69 @@
+<style>
+                    .table-responsive {
+                            max-width: 500px;
+                            
+                            margin: auto;
+                            vertical-align: middle;
+                            }
+                </style>
+				<head>
+                    <title>Player Analytics</title>
+                </head>
+				<header>
+                    <h1 align="center">Player Analytics</h1>
+                    <h2 align="center">Select a CSV file containing Player Attributes for Analysis</h2>
+                </header>    
+                <body>
+
+        {%if ctrsuccess %}
+        <div class="table-responsive">
+            <table class="table table-striped" cellspacing="10">
+				<thead>
+					<tr>
+						<th>Player Name</th>
+						<th>Current Rating</th>
+						<th>Predicted Position</th>
+						<th>Predicted Potential</th>
+					</tr>
+				</thead>
+                <tbody>
+                    {%for ctrrow in ctrsuccess %}
+                    <tr>
+                        <td align="right">{{ ctrrow['Name'] }}</td>
+						<td align="right">{{ ctrrow['Current_rating'] }}</td>
+						<td align="right">{{ ctrrow['Predicted_position'] }}</td>
+						<td align="right">{{ ctrrow['Predicted_potential'] }}</td>
+                    </tr>
+                    {%endfor%}
+                </tbody>
+            </table>
+        </div>
+        {%endif%}
+		</body>
+		
+<form method="POST">
+                <style>
+                    .wrapper {
+                             max-width: 500px;
+                            height: 100%;
+                            margin: auto;
+                            vertical-align: middle;
+                            top: 50%;
+							padding: 10px;
+                            
+                            
+                            }
+                    .button {
+                            
+							top: 50%;
+							left: 50%;
+							border-radius: 8px;
+							padding: 10px;
+                            }
+                </style>
+                <body>
+                <div class="wrapper">
+                   <button class="button" align="center">Select Input Data File</button>
+                </div> 
+                </body>
+              </form>		
