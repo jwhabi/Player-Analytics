@@ -195,6 +195,8 @@ player_data['weight']=player_data['weight'].astype(np.int16)
 player_data['age']=player_data['age'].astype(np.int16)
 player_data['position']=player_data['position'].astype('category')
 
+#Dropping duplicate rows
+player_data=player_data.drop_duplicates()
 
 player_data['attacking_work_rate'].values
 len(player_data)
