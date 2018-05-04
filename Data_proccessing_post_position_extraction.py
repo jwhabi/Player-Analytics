@@ -8,21 +8,15 @@ Created on Thu Apr 16 19:04:16 2018
 import sqlite3 
 import pandas as pd
 import numpy as np
-
-import os
 import matplotlib.pyplot as plt
 import datetime
 from IPython import get_ipython
 get_ipython().run_line_magic('matplotlib', 'inline')
 
 conn = sqlite3.connect("F:\\DPA\\Project\\database.sqlite")
-
 cur=conn.cursor()
-
-
 #------------------------
 table = pd.read_sql_query("SELECT name FROM sqlite_master WHERE type='table'", conn)
-
 df={}
 for n in table['name']:
     print(n)
@@ -33,51 +27,29 @@ for n in table['name']:
 #locals().update(df) ------->>> is messing with local namespace a bad idea?? research needed
 print(df.keys())
 
-#Evaluate the labelled position for each player based on match lineups
+#Adding extracted position to "Player_Attributes"
 
 df['Player_Attributes'].shape
-
-
-#trying - delete if it doesnt work out
 p= pd.read_csv('F:/Player-Analytics/kmean_predicted_on_bucket_mean.csv')
 list(p)
-p1=p.drop('bucket_total',1)
-p1=p1.drop('diff12',1)
-p1=p1.drop('diff23',1)
-p1=p1.drop('diff31',1)
-p1=p1.drop('diff_mean',1)
-p1=p1.drop('bucket_mean1',1)
+p1=p.drop('bucket_mean1',1)
 p1=p1.drop('bucket_std1',1)
-p1=p1.drop('diff1',1)
-p1=p1.drop('diff2',1)
-p1=p1.drop('diff3',1)
-p1=p1.drop('average deviation',1)
 p1=p1.drop('kmean_predict',1)
-p1=p1.drop('bucket810',1)
-p1=p1.drop('bucket1013',1)
-p1=p1.drop('bucket1316',1)
 p1=p1.drop('Unnamed: 0',1)
 p1=p1.drop( 'index',1)
-
 p1['position']=p1['kmeans_predict_position']
 p1.position
 p1=p1.drop('kmeans_predict_position',1)
-lis(p1)
+list(p1)
 
 r= np.unique(p.player_api_id, return_index=True, return_inverse=True, return_counts=True)
 
 df['Player_Attributes'] =p1
 df['Player_Attributes'].shape
-
-
-#df['Player_Attributes']['position'] = pos
 df['Player_Attributes'].to_csv('Player_Attributes_new' + '.csv', index_label='index')   
 
 nanrows=df['Player_Attributes'][df['Player_Attributes'].isnull().T.any().T]
 nanrows.shape # 0.02%
-
-
-
 df['Player_Attributes']=df['Player_Attributes'].dropna()
 df['Player_Attributes'].shape
 df['Player_Attributes'].to_csv('Player_Attributes_new1' + '.csv', index_label='index')   
