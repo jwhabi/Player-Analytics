@@ -16,9 +16,11 @@ player_data.head()
 player_data.dtypes
 player_data=player_data.drop(["Unnamed: 0", "player_fifa_api_id", "player_api_id"],axis=1)
 player_data.columns
+#Generating Correlation Matrix
 corr=player_data.corr()
 corr.to_csv('correlation.csv')
 print(corr)
+#creating a heatmap for the correlation matrix
 fig1,ax1 = plot.subplots(nrows = 1,ncols = 1)
 fig1.set_size_inches(w=30,h=24)
 #sns.heatmap(corr,annot = True,ax = ax2, cmap="YlGnBu", cbar_kws={"orientation": "horizontal"})
@@ -36,7 +38,7 @@ for i,j in enumerate(player_datahist.select_dtypes(include = ['float64','int64']
     sns.distplot(pat.loc[:,j],kde = False,hist = True, ax = ax2[int(i/6)][i%6])
 fighist.tight_layout()
 
-#Creating Boxplot
+#creating boxplots
 figbox, ax2 = plot.subplots(nrows=7,ncols=6)
 figbox.set_size_inches(20,16)
 for i,j in enumerate(player_datahist.select_dtypes(include = ['float64','int64']).columns.tolist()):
