@@ -5,7 +5,8 @@ Prediction Player potential and Position based on FIFA player data and Match rec
 Note: Download the 'implementation_package.rar' file to get a executable package of the analysis.
 
 **To run: 
-Extract the rar file, and start a local server through command line by traversing to the newly created directory in command line and executing 'python filechooser.py'. 
+Extract the rar file, and start a local server through command line by traversing to the newly created directory in command line 
+and executing 'python filechooser.py'. 
 Then open the link 127.0.0.1:5000/Test on your browser. **
 
 Sports Analytics usually involves identifying and collecting massive amounts of data for a set of leagues, teams and/or
@@ -63,4 +64,5 @@ Sports.
 The Data Modeling folder consists of the discussed 4 modelling implementations
 The implementation folder consists of the source code for the flask app created
 The implementation rar file contains the actual distribution package for running this predictive report. **
-** For further details, the entire project report can be found on this link: https://drive.google.com/file/d/1s6hOQy2qrnAsZQEjghq68XPnPs2xUay1/view?usp=sharing **
+** For further details, the entire project report can be found on this link:
+https://drive.google.com/file/d/1s6hOQy2qrnAsZQEjghq68XPnPs2xUay1/view?usp=sharing **
